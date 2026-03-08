@@ -1,0 +1,74 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# =========================
+# Virtual environment
+# =========================
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Build / packaging
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# PyInstaller
+*.spec
+
+# =========================
+# Test / cache / tooling
+# =========================
+.coverage
+.coverage.*
+htmlcov/
+
+# =========================
+# IDE / editor
+# =========================
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Project outputs
+# =========================
+solutions_img/
+
+# =========================
+# Local Python version / lockfiles
+# =========================
+.python-version
+
+# Keep uv.lock if you want reproducible environments.
+# If you do NOT want to track it, uncomment the next line:
+# uv.lock
+
+# =========================
+# Executables / release artifacts
+# =========================
+*.msi
+*.zip
+*.7z
+
+# =========================
+# Logs / temp
+# =========================
+*.log
+*.tmp
+*.bak

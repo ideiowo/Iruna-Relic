@@ -1,0 +1,63 @@
+# ===== Global Config =====
+BOARD=7x7
+TARGET=ATK
+
+# ===== Pieces =====
+[A]
+name=凱薩
+color=black
+shape:
+AAAA
+ A
+
+[B]
+name=薩羅
+color=yellow
+shape:
+BBBBBB
+B
+
+[C]
+name=鳥人
+color=white
+shape:
+CCC
+CCC
+
+[D]
+name=冰龍
+color=green
+shape:
+  D
+ DDD
+DD
+
+[E]
+name=風龍
+color=red
+shape:
+EE
+ EE
+ E
+
+[F]
+name=拜坦
+color=red
+shape:
+F FF
+FFF
+F
+
+[G]
+name=對Boss
+color=white
+shape:
+GGGG
+ G
+
+[H]
+name=獅子
+color=black
+shape:
+HHH
+ HHH
