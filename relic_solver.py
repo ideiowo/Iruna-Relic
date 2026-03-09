@@ -320,12 +320,85 @@ class Solver:
             self._dfs(rest)
             self.undo_place(cells)
 
+def draw_label_on_cell(
+    canvas_bgra: np.ndarray,
+    label: str,
+    x: int,
+    y: int,
+    cell_w: int,
+    cell_h: int,
+    alpha: float = 0.45,
+) -> None:
+    """
+    在單一格子中央畫半透明英文字母。
+    x, y 是該格左上角座標。
+    """
+    overlay = canvas_bgra.copy()
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+
+    # 字體大小依格子自動調整
+    font_scale = min(cell_w, cell_h) / 55.0
+    thickness = max(1, int(min(cell_w, cell_h) / 18))
+
+    # 先計算文字尺寸
+    (tw, th), baseline = cv2.getTextSize(label, font, font_scale, thickness)
+
+    tx = x + (cell_w - tw) // 2
+    ty = y + (cell_h + th) // 2
+
+    # 顏色：白字 + 黑描邊，辨識度最高
+    outline_color = (0, 0, 0, 255)
+    text_color = (255, 255, 255, 255)
+
+    # 在 overlay 上先畫描邊
+    cv2.putText(
+        overlay,
+        label,
+        (tx, ty),
+        font,
+        font_scale,
+        outline_color,
+        thickness + 2,
+        cv2.LINE_AA,
+    )
+
+    # 再畫主字
+    cv2.putText(
+        overlay,
+        label,
+        (tx, ty),
+        font,
+        font_scale,
+        text_color,
+        thickness,
+        cv2.LINE_AA,
+    )
+
+    # 半透明混合回原圖
+    cv2.addWeighted(overlay, alpha, canvas_bgra, 1.0 - alpha, 0, dst=canvas_bgra)
 
 def clear_output_dir(out_dir: Path) -> None:
     if out_dir.exists():
         shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
 
+def _imwrite_unicode(path: Path, img: np.ndarray) -> None:
+    """
+    Windows 中文路徑安全版寫圖：
+    用 cv2.imencode + tofile，避免 cv2.imwrite 在 Unicode 路徑失敗。
+    """
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    ext = path.suffix.lower()
+    if not ext:
+        raise ValueError(f"Output path has no suffix: {path}")
+
+    ok, buf = cv2.imencode(ext, img)
+    if not ok:
+        raise RuntimeError(f"Failed to encode image for: {path}")
+
+    buf.tofile(str(path))
 
 def _imread_rgba(path: Path) -> np.ndarray:
     """
@@ -407,6 +480,47 @@ def load_tiles_scaled_to_min() -> Tuple[Dict[str, np.ndarray], Tuple[int, int]]:
 
     return color_imgs, (min_w, min_h)
 
+def draw_piece_boundaries(
+    canvas_bgra: np.ndarray,
+    board_7x7: List[List[str]],
+    tile_wh: Tuple[int, int],
+    color: Tuple[int, int, int, int] = (255, 0, 0, 255),  # 藍色（BGRA）
+    thickness: int = 6,
+) -> None:
+    """
+    為每一組拼圖（同 pid）畫外輪廓粗線。
+    只畫不同 pid / 空白 交界處，因此是整組邊界，不是每格小框。
+    """
+    tile_w, tile_h = tile_wh
+    rows = len(board_7x7)
+    cols = len(board_7x7[0]) if rows > 0 else 0
+
+    for y in range(rows):
+        for x in range(cols):
+            pid = board_7x7[y][x]
+            if pid == ".":
+                continue
+
+            x1 = x * tile_w
+            y1 = y * tile_h
+            x2 = x1 + tile_w
+            y2 = y1 + tile_h
+
+            # 上邊：上方越界或不是同一組
+            if y == 0 or board_7x7[y - 1][x] != pid:
+                cv2.line(canvas_bgra, (x1, y1), (x2, y1), color, thickness, cv2.LINE_AA)
+
+            # 下邊
+            if y == rows - 1 or board_7x7[y + 1][x] != pid:
+                cv2.line(canvas_bgra, (x1, y2), (x2, y2), color, thickness, cv2.LINE_AA)
+
+            # 左邊
+            if x == 0 or board_7x7[y][x - 1] != pid:
+                cv2.line(canvas_bgra, (x1, y1), (x1, y2), color, thickness, cv2.LINE_AA)
+
+            # 右邊
+            if x == cols - 1 or board_7x7[y][x + 1] != pid:
+                cv2.line(canvas_bgra, (x2, y1), (x2, y2), color, thickness, cv2.LINE_AA)
 
 def build_mosaic_bgra(
     board_7x7: List[List[str]],
@@ -419,19 +533,32 @@ def build_mosaic_bgra(
     # 透明底
     mosaic = np.zeros((tile_h * 7, tile_w * 7, 4), dtype=np.uint8)
 
-    # 貼 tile
+    # 先貼 tile
     for y in range(7):
         for x in range(7):
             pid = board_7x7[y][x]
             if pid == ".":
                 continue
-            color = pid_to_color.get(pid)
-            if not color:
-                continue
-            tile = tiles[color]
-            _alpha_blit(mosaic, tile, x * tile_w, y * tile_h)
 
-    # 格線也拿掉，避免破壞透明觀感
+            color_name = pid_to_color.get(pid)
+            if not color_name:
+                continue
+
+            px = x * tile_w
+            py = y * tile_h
+
+            tile = tiles[color_name]
+            _alpha_blit(mosaic, tile, px, py)
+
+    # 再畫每組拼圖的外輪廓
+    draw_piece_boundaries(
+        mosaic,
+        board_7x7,
+        tile_wh,
+        color=(255, 0, 0, 255),  # 藍色
+        thickness=max(3, min(tile_w, tile_h) // 12),
+    )
+
     return mosaic
 
 def save_sorted_solution_images(solutions: List[Solution], pid_to_color: Dict[str, str]) -> None:
@@ -444,7 +571,7 @@ def save_sorted_solution_images(solutions: List[Solution], pid_to_color: Dict[st
     for i, sol in enumerate(solutions_sorted, 1):
         mosaic = build_mosaic_bgra(sol.board, pid_to_color, tiles, tile_wh)
         out_path = OUT_IMG_DIR / f"solution_{i:03d}_score{sol.score}_rot{sol.rot_k*90}.png"
-        cv2.imwrite(str(out_path), mosaic)
+        _imwrite_unicode(out_path, mosaic)
 
     print(f"[OUTPUT] saved {len(solutions_sorted)} images into {OUT_IMG_DIR}/", flush=True)
 

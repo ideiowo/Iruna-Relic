@@ -1,4 +1,3 @@
-
 # Iruna Relic Solver
 
 A lightweight solver for **Iruna Online relic / puzzle board layouts**.
@@ -24,6 +23,26 @@ For Japanese documentation, see [README_ja.md](README_ja.md).
 - Exports **image-based solutions**
 - Sorts solutions by score automatically
 - Users only need to edit **`relic_puzzles.txt`**
+
+---
+
+## Examples
+
+Example output images:
+
+### Example 1
+- File: `solution_001_score5_rot270.png`
+- Meaning: the best-ranked solution in this run scored **5**, and its best scoring orientation was **270°**
+
+![Example score 5](docs/images/example_score5_rot270.png)
+
+### Example 2
+- File: `solution_001_score6_rot90.png`
+- Meaning: the best-ranked solution in this run scored **6**, and its best scoring orientation was **90°**
+
+![Example score 6](docs/images/example_score6_rot90.png)
+
+These images are generated automatically by the solver and saved to `solutions_img/`.
 
 ---
 
@@ -200,9 +219,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 ---
 
-## 3. README_ja.md
-
-# イルーナ レリック 
+# イルーナ レリック 配置ソルバー
 
 **イルーナ戦記のレリッククリスタ配置**を解くための軽量ツールです。
 
@@ -227,6 +244,26 @@ For English documentation, see [README.md](README.md).
 - 解答を**画像形式**で出力
 - スコア順に自動ソート
 - ユーザーが編集するのは **`relic_puzzles.txt`** のみ
+
+---
+
+## 実行例
+
+出力例は以下の通りです。
+
+### 例1
+- ファイル名: `solution_001_score5_rot270.png`
+- 意味: この実行結果で最上位の解が **スコア5** を獲得し、**270度回転** の状態が最高得点だったことを示します
+
+![Example score 5](docs/images/example_score5_rot270.png)
+
+### 例2
+- ファイル名: `solution_001_score6_rot90.png`
+- 意味: この実行結果で最上位の解が **スコア6** を獲得し、**90度回転** の状態が最高得点だったことを示します
+
+![Example score 6](docs/images/example_score6_rot90.png)
+
+これらの画像はソルバーによって自動生成され、`solutions_img/` に保存されます。
 
 ---
 
@@ -398,5 +435,3 @@ solution_001_score5_rot90.png
 ## ライセンス
 
 このプロジェクトは MIT License の下で公開されています。詳細は [LICENSE](LICENSE) を参照してください。
-
-````
