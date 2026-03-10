@@ -217,6 +217,10 @@ def canonical_board_string_rot_only(board: List[List[str]]) -> str:
     return min(reps)
 
 
+def clone_board(board: List[List[str]]) -> List[List[str]]:
+    return [row[:] for row in board]
+
+
 def score_board_max_rotation(
     board: List[List[str]],
     pid_to_color: Dict[str, str],
@@ -224,7 +228,7 @@ def score_board_max_rotation(
 ) -> Tuple[int, int, List[List[str]]]:
     best_score = -1
     best_k = 0
-    best_board = board
+    best_board = clone_board(board)
 
     for k in range(4):
         rb = rotate_board_k(board, k)
@@ -236,10 +240,9 @@ def score_board_max_rotation(
         if s > best_score:
             best_score = s
             best_k = k
-            best_board = rb
+            best_board = clone_board(rb)
 
     return best_score, best_k, best_board
-
 
 class Solver:
     def __init__(self, config: PuzzleConfig, pieces: List[Piece], progress_every: int = 5000):
