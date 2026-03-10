@@ -31,6 +31,7 @@ pip-wheel-metadata/
 .coverage
 .coverage.*
 htmlcov/
+dist/
 
 # =========================
 # IDE / editor
